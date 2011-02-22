@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- Combo-handled YUI CSS files: -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.7.0/build/reset-fonts-grids/reset-fonts-grids.css&amp;2.7.0/build/base/base-min.css">
+        <link rel="stylesheet" href="/css/EliteCircle.css" type="text/css">
+        <title>Inside-out Templates in Perl  – Webquills.net</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <!--[if lte IE 6]>
+        <link rel="stylesheet" type="text/css" href="/css/EliteCircle-ie6.css">
+        <![endif]-->
+        <link rel="alternate" href="http://feeds.feedburner.com/Webquills"
+         title="Webquills: Recent Articles" type="application/atom+xml">
+    </head>
+    <body>
+        <div id="doc3" class="yui-t6">
+            <div id="hd" class="banner"><div id="header-content">
+                <div id="logotype"><a href="/index.html" title="">Web<span class="orange">quills</span></a></div>  
+                <div id="tagline" class="orange">Develop <em>effective</em> web sites</div>       
+                    <ul id="nav" class="navigation">
+                    <li><a href="/index.html" class="current">Home</a></li>
+                    <li><a href="/web-strategy/">Web Strategy</a></li>
+                    <li><a href="/web-development/">Web Development</a></li>
+                    <li><a href="/about.html">About Webquills</a></li>           
+                </ul>
+                <div class="align-right"><form class="" action="/search.html" id="cse-search-box">
+    <div>
+      <input type="hidden" name="cx" value="004553175044610565612:hj3e8onr_tg" />
+      <input type="hidden" name="cof" value="FORID:10" />
+      <input type="hidden" name="ie" value="UTF-8" />
+      <input type="text" name="q" size="31" />
+      <input type="submit" name="sa" value="Search" />
+    </div>
+</form>
+
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en"></script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+ </div>
+            </div></div>
+            <div id="bd">
+                <div id="content" class='yui-gc'>
+<div id="main" class='yui-u first main'>
+<h1 id="inside-outtemplatesinperl">Inside-out Templates in Perl</h1>
+<p>Pop quiz, hotshot. Your team has undertaken a project to completely redesign your web site. Fancy-pants designers are hard at work generating not one but <em>three</em> new designs. The designs will be put through a battery of usability tests, after which the best parts will be combined into the final design. They need <em>you</em> to create server-side logic that will populate content areas, navigation, and various design elements according to how the user manipulates the site. But the HTML is nowhere near finished, and the designers will be tweaking it right up to the day of the test. <em>What do you do?</em></p>
+<p>Your normal workflow is shot. Typically you receive finished HTML from the designers, break it down into reusable components, add template tags to represent program objects and logic, and prepare the whole thing to be run through a template processor to generate output. That&#39;s out. Any attempt to mess with their HTML will be counter-productive. The priority here is to perfect the design for usability testing, and that means rapid iteration in visual design tools. Template tags will get in the way.</p>
+<p>The time crunch is serious. They need a <em>functional</em> prototype to test with, but you can&#39;t embed the functionality into the template. They&#39;re holding your templates hostage.</p>
+<p>My solution: Shoot the hostage.</p>
+<h2 id="bindinglogictodocumentstructure">Binding logic to document structure</h2>
+<p>The key to solving a seemingly impossible problem is not to come up with a seemingly impossible solution. It is to reframe the problem into something that&#39;s easier to solve.</p>
+<p>In this situation, the problems <em>seems</em> to be that I have to embed my template logic into these HTML files at the last minute, with no hope of having time for testing. Since this is nearly impossible, let&#39;s break down the problem. What is the template logic going to actually do? </p>
+<ol>
+	<li>Extract content from a database, keyed by the requested URL, and wrap it in one of the provided designs.</li>
+	<li>Rewrite the navigation section according to the URL of the current page.</li>
+	<li>Perform several variable substitutions based on the site being tested.</li>
+</ol>
+<p>None of these things are really dependent on the particular HTML design they are going into. They are just inserting or changing some content at a particular position in the document structure. I can write this logic without having the HTML. The trouble is, the logic does not do anything until it is bound to the document structure in some way. Template systems perform this binding by <em>embedding</em> the logic into the structure itself. Since I can&#39;t put template markers into the HTML, what I need is a way to bind the logic to the document structure <em>from the outside</em>.</p>
+<p>Being a Perl hacker, my first thought was, can I rewrite the content using a regular expression string substitution? Having a look at the HTML in progress, I quickly decided this was an unreliable method. If they changed the order of tags or attributes, which they were sure to do, everything would break, and I would be up all night debugging regular expressions. Not my idea of a party.</p>
+<p>If only this were a client-side application, I found myself thinking. Then I could use <a href="http://jquery.com/">jQuery</a> or another javascript toolkit to rewrite the <abbr title="Document Object Model">DOM</abbr> at the client. In old-school javascript, this wouldn&#39;t be much better, but modern techniques like <a href="http://domscripting.com/blog/display/41">Hijax</a> allow you to separate the code from the structure to manipulate the DOM from the outside.</p>
+<p>Hang on a minute. At the server, I have access to everything the client has and then some. Can&#39;t I build a DOM at the server and manipulate it in Perl?</p>
+<h2 id="aninside-outtemplateusinghtml::treebuilder">An inside-out template using HTML::TreeBuilder</h2>
+<p>Off to <a href="http://search.cpan.org">CPAN Search</a>, and in minutes I was writing my first experimental script with <a href="http://search.cpan.org/dist/HTML-Tree/">HTML::TreeBuilder</a>. I started with something like this:</p>
+<pre><code>#!/usr/bin/perl
+use HTML::TreeBuilder;
+
+my $tree = HTML::TreeBuilder-&gt;new();
+$tree-&gt;parse_file(&#39;wrapper.html&#39;);
+
+my @links = $tree-&gt;look_down( _tag =&gt; &#39;a&#39;);
+
+printf &#39;Found %s links&#39;, scalar(@links);
+print &quot;\n&quot;;
+for (@links) {
+        print $_-&gt;attr(&#39;href&#39;),&quot;\n&quot;;
+}
+</code></pre>
+<p>Sure enough, I was able to print out all the linked URLs just like that! </p>
+<p>My next step was not code, but social engineering. I talked to our designers and established that all the HTML designs would use the same HTML id attributes for the same document elements, and that these id attributes would not change. I needed this structural stability for my code to work. Fortunately, our clever designers were already on the ball and didn&#39;t have to change a thing.</p>
+<p>I quickly implemented some procedural code that would perform the replacements I was after. Most of the code was spent loading the strings and structures that would serve as replacement text, so it isn&#39;t really useful to display here. But here are a few tips that might help you out if you decide to use HTML::TreeBuilder in your application.</p>
+<h3 id="treebuldertip1:commentsarestrippedbydefault">TreeBulder Tip 1: Comments are stripped by default</h3>
+<p>The designers needed to see their &quot;trace&quot; comments in the output of the processed template. HTML::TreeBuilder throws comments away by default. To keep them:</p>
+<pre><code>my $tree = HTML::TreeBuilder-&gt;new();
+$tree-&gt;store_comments(1); # Before parsing!
+</code></pre>
+<p>This makes comments appear as separate nodes in the tree, with a tag of <code>~comment</code>. You can also preserve PHP code and other processing instructions using <code>$tree-&gt;store_pis(1)</code>, and preserve the DOCTYPE declaration with <code>$tree-&gt;store_declarations(1)</code>, although I didn&#39;t need to.</p>
+<h3 id="treebuildertip2:enableparsingxml-styleemptyelementtags">TreeBuilder Tip 2: Enable parsing XML-style empty element tags</h3>
+<p>My designers were using tools that produced (for the most part) valid XHTML. In XHTML, the empty tag syntax is used for tags like <code>link</code> and <code>img</code>.</p>
+<pre><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/global.css&quot; /&gt;
+            &lt;!-- XHTML Empty tag syntax  ^^^ --&gt;
+</code></pre>
+<p>TreeBuilder&#39;s default parse mode (inherited from HTML::Parser) treats these trailing slashes as character data. This didn&#39;t cause any actual problems for me, but better safe than sorry. I explicitly enabled support for empty tags this way:</p>
+<pre><code>$tree-&gt;empty_element_tags(1); # Before parsing!
+</code></pre>
+<h3 id="treebuildertip3:beexplicitwithas_html">TreeBuilder Tip 3: Be explicit with <code>as_HTML()</code></h3>
+<p>To turn the in-memory model back into HTML text for output, you use the <code>as_HTML()</code> method. This method can be called with no arguments, in which case it implements some default behaviors which are almost certainly not what your designers want.</p>
+<p>The first argument describes what character entities should be HTML encoded in PCDATA (i.e. text nodes). By default, it encodes everything that <a href="http://search.cpan.org/perldoc?HTML%3A%3AEntities">HTML::Entities</a> knows how to encode. This is probably overkill. The docs say that you can be compatible with previous versions by passing &#39;&lt;&gt;&amp;&#39;.</p>
+<p>The second argument is the &quot;indent string&quot;. By default this is undefined, which is nice for production since it eliminates unnecessary white space in the output. But when you are debugging the output, it&#39;s nice to have it &quot;pretty printed&quot;. So I specified a four-space indent. With this setting, TreeBuilder neatly aligns open and close tags, making debugging much easier.</p>
+<p>The third and most important argument defines elements whose end-tags are &quot;optional&quot;, and by optional it means <em>omitted</em>. If you want your HTML to validate, and more importantly not be <em>broken</em>, you need to pass an empty hash reference for this argument. Missing <code>&lt;/p&gt;</code> tags can seriously screw up a CSS based layout in certain circumstances, as I discovered the hard way.</p>
+<p>So the <em>correct</em> way to call <code>as_HTML()</code> is like this:</p>
+<pre><code>$w_tree-&gt;as_HTML(&#39;&lt;&gt;&amp;&#39;,&#39;    &#39;,{});
+</code></pre>
+<h3 id="treebuildertip4:dontuseas_xmlunlessyoureallymeanit">TreeBuilder Tip 4: Don&#39;t use <code>as_XML()</code> unless you <em>really</em> mean it</h3>
+<p>If you are producing XHTML code, you might be tempted to call <code>as_XML()</code> instead of <code>as_HTML()</code> to serialize your tree. And you would be correct. But remember that XML is <em>very strict</em> about how things must be structured, and TreeBuilder complies with this strictness.</p>
+<p>One of the sneaky things that will bite you is that in XHTML, script tags have a content model of PCDATA. This means that a <em>correct</em> XML generator must encode entities contained by the tag. And if this happens (as it will if you call <code>as_XML()</code>), your Javascript just got completely mangled and will no longer run. (Unless, of course, you used the magic incantation to wrap your script contents in CDATA sections.) You can read more about the issues on <a href="http://developer.mozilla.org/en/docs/Properly_Using_CSS_and_JavaScript_in_XHTML_Documents">Moz Dev</a>. However, I found the safest route was to output HTML 4.01 instead. Using an HTML 4 DOCTYPE still triggers standards mode in web browsers, but doesn&#39;t have all the <a href="http://hixie.ch/advocacy/xhtml">pitfalls of serving XHTML</a>.</p>
+<h3 id="treebuildertip5:html::element::library">TreeBuilder Tip 5: HTML::Element::Library</h3>
+<p>I discovered this too late to use it myself, but <a href="http://search.cpan.org/perldoc?HTML::Element::Library">HTML::Element::Library</a> extends HTML::Element with some finger-saving shortcuts. Several times I ended up writing a code stanza that looked like this:</p>
+<pre><code>my $e = $tree-&gt;look_down(id =&gt; &#39;replaceMe&#39;);
+$e-&gt;delete_content();
+$e-&gt;push_content($replacement);
+</code></pre>
+<p>With HTML::Element::Library, you can do this instead:</p>
+<pre><code> $tree-&gt;look_down(id =&gt; &#39;replaceMe&#39;)-&gt;replace_content($replacement);
+</code></pre>
+<h2 id="treebuilderprosandcons">TreeBuilder Pros and Cons</h2>
+<p>I think TreeBuilder was the the right tool for the job I had to do. It allowed me to manipulate HTML documents at the server <em>without</em> embedding code-specific markers in the document itself. This allowed my team to generate both HTML and server-side Perl code in parallel, and we met our targets with room to spare.</p>
+<p>That said, I don&#39;t think I would want to use TreeBuilder as my regular template tool. Binding logic to the HTML structure using procedural Perl takes a lot more code than just embedding it into the template. More code means more typing, more testing, and more bugs. <a href="http://search.cpan.org/perldoc?HTML::Seamstress">HTML::Seamstress</a> tries to help, and certainly should be considered if you are using more than one or two templates with this method, but Seamstress doesn&#39;t eliminate code so much as generate it for you. Better, but still not what I want.</p>
+<p>What I <em>really</em> want is a concise, declarative syntax for binding logic to the document structure. No, not XSLT. I said &quot;concise&quot;. I can definitely write Perl code faster than XSLT, and the resulting code is shorter and easier to read.</p>
+<p>What would be nice is something very like a CSS stylesheet, but with code blocks instead of style attribute assignments inside the curly braces. Or maybe just a Perl port of jQuery. That would be <em>way</em> cool. Anybody want to build that for me?</p>
+<h2 id="popculturenote">Pop culture note</h2>
+<p>For those too young to remember, &quot;Pop quiz, hotshot&quot;, &quot;What do you do?&quot;, and &quot;Shoot the hostage&quot; are references to the 1994 action movie <a href="http://www.amazon.com/gp/product/B0006GANOQ?ie=UTF8%26tag%3Dcontrolescape-20%26linkCode%3Das2%26camp%3D1789%26creative%3D9325%26creativeASIN%3DB0006GANOQ">Speed</a><img alt="" border="0" height="1" src="http://www.assoc-amazon.com/e/ir?t=controlescape-20%26l%3Das2%26o%3D1%26a%3DB0006GANOQ" style="border:none !important; margin:0px !important;" width="1" />, a classic of my generation.</p>
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://disqus.com/forums/webquills/embed.js"></script><noscript><a href="http://webquills.disqus.com/?url=ref">View the discussion thread.</a></noscript><a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+<div id="sidebar" class='yui-u'><div id="sidebar-inner" class="yui-b"><!-- YOUR SIDEBAR GOES HERE -->
+    <div class="widget">
+      <h4 class="sidebar">Follow Webquills.net</h4>
+      <div class="widget-content">
+        <ul class="sidemenu">
+            <li class="blog feed"><a href="http://feeds.feedburner.com/Webquills"><img src="/img/feed-icon-20.png" alt="" class="inline no-border" height="20" width="20"> Webquills RSS feed</a></li>
+            <li class="blog feed"><a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=929839&amp;loc=en_US"><img src="/img/mail_get.png" class="inline no-border" alt="" height="20" width="20"> Get Webquills by Email</a></li>
+            <li class="blog feed"><a href="http://twitter.com/veselosky"><img src="/img/twitter-20.png" alt="" class="inline no-border" height="20" width="20"> Follow me on Twitter</a></li>
+
+        </ul>
+      </div>
+    </div>
+ 
+<!--
+    <div class="widget"><h4 class="sidebar">Webquills Recommends</h4>
+      <div class="widget-content">
+        <a href="http://www.basecampHQ.com/?referrer=VINCENTVESELOSKY"><img alt="Basecamp" border="0" height="125" src="https://affiliate.37signals.com/images/products/basecamp/banner-270x125.png" class="inline no-border" width="270" /></a>
+        <script type="text/javascript">
+        google_ad_client = "pub-5857400612237359";
+        /* 300x250 text &amp; image */
+        google_ad_slot = "7120121030";
+        google_ad_width = 300;
+        google_ad_height = 250;
+        </script>
+        <script type="text/javascript"
+        src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+        </script>
+      </div>
+    </div>
+        -->
+
+</div>
+</div>
+</div>
+
+            </div>
+            <div id="ft">
+              <div id="footer-content">
+                  <div class="yui-g">
+                      <div class="yui-u first">
+                        <p><a href="http://www.perl.com/"><img src="/img/powered_by_perl_dk.gif"
+                        alt="Powered by the Perl programming language" class="inline no-border"></a></p>
+                        <p>Part of the <a href="http://perlsphere.net/"><img alt="Perlsphere" class="inline no-border" src="/img/perlsphere.png"></a> network.</p>
+                        <p><a href="/credits.html">additional credits</a></p>
+                      </div>
+                    <div class="yui-u">
+                      <div class="widget-creative-commons widget">
+                         <div class="widget-content">
+                            <p><a href="http://creativecommons.org/licenses/by-nd/3.0/us/"><img src="http://i.creativecommons.org/l/by-nd/3.0/us/88x31.png" class="no-border" alt="Creative Commons License"></a></p>
+                            <p>&copy; Copyright 2008-2009 by Vincent Veselosky. Unless otherwise noted, content on this web site is licensed under a <a href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative Commons License</a>.</p>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+        </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+    var pageTracker = _gat._getTracker("UA-642116-5");
+    pageTracker._trackPageview();
+} catch(err) {}</script>
+    </body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- Combo-handled YUI CSS files: -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.7.0/build/reset-fonts-grids/reset-fonts-grids.css&amp;2.7.0/build/base/base-min.css">
+        <link rel="stylesheet" href="/css/EliteCircle.css" type="text/css">
+        <title>Beyond Perl?  – Webquills.net</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <!--[if lte IE 6]>
+        <link rel="stylesheet" type="text/css" href="/css/EliteCircle-ie6.css">
+        <![endif]-->
+        <link rel="alternate" href="http://feeds.feedburner.com/Webquills"
+         title="Webquills: Recent Articles" type="application/atom+xml">
+    </head>
+    <body>
+        <div id="doc3" class="yui-t6">
+            <div id="hd" class="banner"><div id="header-content">
+                <div id="logotype"><a href="/index.html" title="">Web<span class="orange">quills</span></a></div>  
+                <div id="tagline" class="orange">Develop <em>effective</em> web sites</div>       
+                    <ul id="nav" class="navigation">
+                    <li><a href="/index.html" class="current">Home</a></li>
+                    <li><a href="/web-strategy/">Web Strategy</a></li>
+                    <li><a href="/web-development/">Web Development</a></li>
+                    <li><a href="/about.html">About Webquills</a></li>           
+                </ul>
+                <div class="align-right"><form class="" action="/search.html" id="cse-search-box">
+    <div>
+      <input type="hidden" name="cx" value="004553175044610565612:hj3e8onr_tg" />
+      <input type="hidden" name="cof" value="FORID:10" />
+      <input type="hidden" name="ie" value="UTF-8" />
+      <input type="text" name="q" size="31" />
+      <input type="submit" name="sa" value="Search" />
+    </div>
+</form>
+
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en"></script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+ </div>
+            </div></div>
+            <div id="bd">
+                <div id="content" class='yui-gc'>
+<div id="main" class='yui-u first main'>
+<h1 id="beyondperl">Beyond Perl?</h1>
+<p><em>[This was originally posted on <a href="http://whatvincedid.blogspot.com">Vince&#39;s personal blog</a>, but is relevant enough that it deserves reposting here, I think. -Editor]</em></p>
+<p>That&#39;s right, I give up. Despite having devoted the last five years exclusively to Perl development, my next project will be written in another language.</p>
+<p>I am not happy about this, quite the contrary. I love Perl. I&#39;ve learned so much of the ins and outs of Perl syntax vagaries that I feel like I&#39;ve been married to it. But for at least a year I have been looking at the web development tools and frameworks in other languages and drooling. Where are the Perl tools that will double my productivity in web development? No, for two years I have spent most of my time <em>building</em> those tools for myself, because those available do not suit my needs and do not measure up to the tools available in several other languages. But of course, I&#39;m not as smart as those other guys, so my home-grown tools are not as good, and not really useful outside my personal bubble.</p>
+<p>Now, the Perl fanatics out there are going to start yelling about things like <a href="http://www.catalystframework.org/">Catalyst</a> and maybe <a href="http://jifty.org/view/HomePage">Jifty</a>. Hey, I know, because I am (was) a Perl fanatic myself. But Catalyst is unnecessarily complicated. In trying to be all things to all programmers, it creates more slow-downs in overhead than it does speed-ups in infrastructure. Jifty is pretty cool, and it even comes with a pony, but it just isn&#39;t there yet, and the community behind it is comparatively small. None of the Perl frameworks I&#39;ve examined make it particularly easy to implement REST-based web services (it&#39;s certainly possible, but the frameworks don&#39;t make it any easier than doing it &quot;by hand&quot;).</p>
+<p>Now, if I had my druthers, based purely on language syntax and tools, I probably would go with Python, and a framework like <a href="http://www.djangoproject.com/">Django</a>. Django is a beautiful piece of work, in my mind the Python alternative to <a href="http://www.rubyonrails.org/">Ruby on Rails</a>, and far superior in productivity to <a href="http://zope.org/">Zope</a> or anything based on it. Also, Python&#39;s <a href="http://www.feedparser.org/">Universal Feed Parser</a> is by far the best library for manipulating RSS and Atom feeds that I have found in any language.</p>
+<p>But there are also disadvantages to choosing Django over PHP. PHP has the simplest deployment path, and is still the most broadly deployed of the open-source technologies on my radar. Django requires mod_python or FastCGI, and Rails similarly relies on FastCGI. These technologies are not widely deployed and not nearly as simple as just dropping a bundle of files into your document root.</p>
+<p>But really there are some big reasons for me to run PHP: <a href="http://www.wordpress.org" title="Wordpress">Wordpress</a>, <a href="http://www.mediawiki.org/wiki/MediaWiki">MediaWiki</a> and <a href="http://www.phpbb.com/">phpBB</a>. These are excellent applications at what they do, and I need to run them on my new web server for compatibility with previous deployments. And all are built with PHP. Since I have to have PHP installed anyway...</p>
+<p>So in addition to Django, I will also give <a href="http://www.symfony-project.com/">symfony</a> a test-drive. This is a PHP web framework. I have no experience with it yet, but it looks more mature than the <a href="http://framework.zend.com">Zend Framework</a>, seems fully capable of doing what I want, and happens to be the first hit on Google for &quot;PHP framework&quot;, so there must be plenty of people who think it&#39;s good.</p>
+<p>My relationship with Perl has not ended. I&#39;m still building large-scale applications with it at my day job, and I have no doubt I will turn to it when the going gets tough in my sysadmin role at home. But it&#39;s time for me to stretch my legs, to look at some other languages in the hope of finding tools that will increase my productivity the way Perl did when I first started using it. Python and Django will be my first try, followed closely by PHP and symfony. And if neither works out, well, there&#39;s always Rails.</p>
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://disqus.com/forums/webquills/embed.js"></script><noscript><a href="http://webquills.disqus.com/?url=ref">View the discussion thread.</a></noscript><a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+<div id="sidebar" class='yui-u'><div id="sidebar-inner" class="yui-b"><!-- YOUR SIDEBAR GOES HERE -->
+    <div class="widget">
+      <h4 class="sidebar">Follow Webquills.net</h4>
+      <div class="widget-content">
+        <ul class="sidemenu">
+            <li class="blog feed"><a href="http://feeds.feedburner.com/Webquills"><img src="/img/feed-icon-20.png" alt="" class="inline no-border" height="20" width="20"> Webquills RSS feed</a></li>
+            <li class="blog feed"><a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=929839&amp;loc=en_US"><img src="/img/mail_get.png" class="inline no-border" alt="" height="20" width="20"> Get Webquills by Email</a></li>
+            <li class="blog feed"><a href="http://twitter.com/veselosky"><img src="/img/twitter-20.png" alt="" class="inline no-border" height="20" width="20"> Follow me on Twitter</a></li>
+
+        </ul>
+      </div>
+    </div>
+ 
+<!--
+    <div class="widget"><h4 class="sidebar">Webquills Recommends</h4>
+      <div class="widget-content">
+        <a href="http://www.basecampHQ.com/?referrer=VINCENTVESELOSKY"><img alt="Basecamp" border="0" height="125" src="https://affiliate.37signals.com/images/products/basecamp/banner-270x125.png" class="inline no-border" width="270" /></a>
+        <script type="text/javascript">
+        google_ad_client = "pub-5857400612237359";
+        /* 300x250 text &amp; image */
+        google_ad_slot = "7120121030";
+        google_ad_width = 300;
+        google_ad_height = 250;
+        </script>
+        <script type="text/javascript"
+        src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+        </script>
+      </div>
+    </div>
+        -->
+
+</div>
+</div>
+</div>
+
+            </div>
+            <div id="ft">
+              <div id="footer-content">
+                  <div class="yui-g">
+                      <div class="yui-u first">
+                        <p><a href="http://www.perl.com/"><img src="/img/powered_by_perl_dk.gif"
+                        alt="Powered by the Perl programming language" class="inline no-border"></a></p>
+                        <p>Part of the <a href="http://perlsphere.net/"><img alt="Perlsphere" class="inline no-border" src="/img/perlsphere.png"></a> network.</p>
+                        <p><a href="/credits.html">additional credits</a></p>
+                      </div>
+                    <div class="yui-u">
+                      <div class="widget-creative-commons widget">
+                         <div class="widget-content">
+                            <p><a href="http://creativecommons.org/licenses/by-nd/3.0/us/"><img src="http://i.creativecommons.org/l/by-nd/3.0/us/88x31.png" class="no-border" alt="Creative Commons License"></a></p>
+                            <p>&copy; Copyright 2008-2009 by Vincent Veselosky. Unless otherwise noted, content on this web site is licensed under a <a href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative Commons License</a>.</p>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+        </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+    var pageTracker = _gat._getTracker("UA-642116-5");
+    pageTracker._trackPageview();
+} catch(err) {}</script>
+    </body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- Combo-handled YUI CSS files: -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.7.0/build/reset-fonts-grids/reset-fonts-grids.css&amp;2.7.0/build/base/base-min.css">
+        <link rel="stylesheet" href="/css/EliteCircle.css" type="text/css">
+        <title>Mason's caching improves performance, relieves database pressure  – Webquills.net</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <!--[if lte IE 6]>
+        <link rel="stylesheet" type="text/css" href="/css/EliteCircle-ie6.css">
+        <![endif]-->
+        <link rel="alternate" href="http://feeds.feedburner.com/Webquills"
+         title="Webquills: Recent Articles" type="application/atom+xml">
+    </head>
+    <body>
+        <div id="doc3" class="yui-t6">
+            <div id="hd" class="banner"><div id="header-content">
+                <div id="logotype"><a href="/index.html" title="">Web<span class="orange">quills</span></a></div>  
+                <div id="tagline" class="orange">Develop <em>effective</em> web sites</div>       
+                    <ul id="nav" class="navigation">
+                    <li><a href="/index.html" class="current">Home</a></li>
+                    <li><a href="/web-strategy/">Web Strategy</a></li>
+                    <li><a href="/web-development/">Web Development</a></li>
+                    <li><a href="/about.html">About Webquills</a></li>           
+                </ul>
+                <div class="align-right"><form class="" action="/search.html" id="cse-search-box">
+    <div>
+      <input type="hidden" name="cx" value="004553175044610565612:hj3e8onr_tg" />
+      <input type="hidden" name="cof" value="FORID:10" />
+      <input type="hidden" name="ie" value="UTF-8" />
+      <input type="text" name="q" size="31" />
+      <input type="submit" name="sa" value="Search" />
+    </div>
+</form>
+
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en"></script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+ </div>
+            </div></div>
+            <div id="bd">
+                <div id="content" class='yui-gc'>
+<div id="main" class='yui-u first main'>
+<h1 id="masonscachingimprovesperformancerelievesdatabasepressure">Mason&#39;s caching improves performance, relieves database pressure</h1>
+<p><a href="http://www.masonhq.com">HTML::Mason</a> is a template system with power tools built in. Here&#39;s a case study in the usefulness of Mason&#39;s internal caching tools.</p>
+<h2 id="masonreadsfromdatabase">Mason reads from database</h2>
+<p>As part of a web site registration application, the user is to be presented with a list of email newsletters the site makes available. During registration, the user may select one or more of the newsletters and be automatically subscribed. So I coded up a Mason component to display this list.</p>
+<pre><code>&lt;%once&gt;
+use ListDB;
+&lt;/%once&gt;
+&lt;%init&gt;
+my @newsletters = ListDB::get_mailing_lists();
+&lt;/%init&gt;
+% for my $newsletter (@newsletters) {
+    &lt;input id=&quot;subscribe&quot; type=&quot;checkbox&quot; name=&quot;subscribe&quot; value=&quot;&lt;% $newsletter %&gt;&quot;&gt;
+    &lt;label for=&quot;subscribe&quot;&gt;&lt;% $newsletter %&gt;&lt;/label&gt;&lt;br&gt;
+%}
+</code></pre>
+<p>Of course this example is simplified, the real code has more HTML and a bit more display logic. It&#39;s not pretty, but it gets the job done. In the <code>once</code> section I import the library that interfaces with our mailing list database (which is managed by a separate application). Then we simply get a list of available newsletters and display each with an input checkbox. </p>
+<h2 id="whendatabaseisbusyapachegetstiedup">When database is busy, Apache gets tied up!</h2>
+<p>As the website and the newsletters became more popular, we began to see problems. Specifically, when the mailing list software was performing some database intensive task, as it frequently did, the simple query underlying the call to <code>ListDB::get_mailing_lists()</code> would take a <em>very</em> long time to return. As a result, the user had to wait a minute or more for the page to load, and an Apache process was occupied waiting for the database to return. If we ever had a time when the web site and the database were both busy at the same time, <em>all</em> our Apache processes could end up waiting for the database query, leaving none to serve pages. That&#39;s bad news for a web site!</p>
+<p>The problem here, obviously, is that the code queries the database <em>every time</em> a user requests the registration form. This is not a problem that is unique to Mason, all dynamic web applications eventually run into it. Nor is the solution unique to Mason. But Mason makes the solution trivial to implement.</p>
+<h2 id="masoncachesmoothesdatabasebumps">Mason cache smoothes database bumps</h2>
+<p>The solution, of course, is to cache the response from the database, so that the next web request does not need to hit the database in order to render the list. The list of newsletters doesn&#39;t change very often, so there is no harm in caching it. In fact, since the HTML rendering of the list won&#39;t change either, why not cache the HTML and save the rendering next time too?</p>
+<p>If only Mason had a built-in cache system so I wouldn&#39;t have to go digging around for extra modules on CPAN and write another 20 lines of code. Oh wait, <em>it does</em>!</p>
+<pre><code>&lt;%init&gt;
+return if $m-&gt;cache_self(expire_in =&gt; 3600); # THE SOLUTION! (ALMOST)
+require ListDB;
+my @newsletters = ListDB::get_mailing_lists();
+&lt;/%init&gt;
+% for my $newsletter (@newsletters) {
+    &lt;input id=&quot;subscribe&quot; type=&quot;checkbox&quot; name=&quot;subscribe&quot; value=&quot;&lt;% $newsletter %&gt;&quot;&gt;
+    &lt;label for=&quot;subscribe&quot;&gt;&lt;% $newsletter %&gt;&lt;/label&gt;&lt;br&gt;
+%}
+</code></pre>
+<p>See, I told you Mason makes it easy! You can arrange for any component to cache its output with this simple incantation. If the component has previously been cached, <code>$m-&gt;cache_self</code> will return a true value, and the component will not execute again. Instead, the output will be fetched from the cache, without any further action on your part. Pretty neat, huh? But that&#39;s not all it does. If the component has <em>not</em> been previously cached, this routine will set a &quot;hook&quot; that will transparently cache the output of the current component execution once it has finished. Now that&#39;s just cool! I&#39;ll bet you can guess what the <code>expire_in</code> argument does. Yup, I&#39;m telling it to cache the output for 3600 seconds (one hour), if the current cache happens to be empty.</p>
+<p>Notice the other change I made. Instead of <code>use</code>ing our ListDB library in the <code>once</code> section, I have changed to a require statement. Why? Because in the general case, the library will not be needed for as much as an hour, because the content will be served from the cache. To save memory, we don&#39;t import the library until after the call the <code>$m-&gt;cache_self</code>, when we know we&#39;ll need it.</p>
+<h2 id="afterthecacheexpiresledeluge">After the cache expires, <em>le deluge</em></h2>
+<p>Ah, but there&#39;s a flaw in your brilliant plan, I hear you say. What happens if the database happens to be slow <em>just</em> when the cache expires? You&#39;re right back where you started, with an empty cache and a whole bunch of Apache process waiting for data to fill it with.</p>
+<p>Doggone it, why do you have to be so observant? I guess I&#39;ll have to break another tool out of Mason&#39;s bag of tricks. Watch <em>this</em>!</p>
+<pre><code>&lt;%init&gt;
+return if $m-&gt;cache_self(expire_in =&gt; 3600, busy_lock =&gt; 60); # THE SOLUTION!
+require ListDB;
+my @newsletters = ListDB::get_mailing_lists();
+&lt;/%init&gt;
+% for my $newsletter (@newsletters) {
+    &lt;input id=&quot;subscribe&quot; type=&quot;checkbox&quot; name=&quot;subscribe&quot; value=&quot;&lt;% $newsletter %&gt;&quot;&gt;
+    &lt;label for=&quot;subscribe&quot;&gt;&lt;% $newsletter %&gt;&lt;/label&gt;&lt;br&gt;
+%}
+</code></pre>
+<p>See what I did there? No? Look again at that first line of the <code>init</code> section. The new <code>busy_lock</code> argument is the key. Basically, that&#39;s telling the Mason cache, &quot;Hey, if this object has expired, extend the life of the old cached value by 60 seconds so other processes will still get a cached value. Meanwhile, I&#39;m gonna calculate a new value and cache that.&quot;</p>
+<p>Now, when the cache &quot;expires&quot;, only <em>one</em> Apache process will notice that fact. That one process will proceed to hit the database for the new value. Meanwhile, other processes will continue to find the old value in the cache for another 60 seconds. If the database does happen to be slow, only one user (per minute) will have a problem, and only one apache process will be hung waiting for data.</p>
+<h2 id="html::masonreferences">HTML::Mason references</h2>
+<ul>
+	<li>The <a href="http://www.masonhq.com">Mason home page</a></li>
+	<li>The <a href="http://www.masonhq.com/docs/manual/Devel.html#data_caching">Data Caching</a> section of the Mason developer guide</li>
+	<li>Get &quot;The Mason Book&quot;, <a href="http://www.amazon.com/gp/product/0596002254?ie=UTF8&amp;tag=webquills-20&amp;linkCode=as2&amp;camp=1789&amp;creative=9325&amp;creativeASIN=0596002254">Embedding Perl in HTML With Mason</a><img alt="" border="0" height="1" src="http://www.assoc-amazon.com/e/ir?t=webquills-20&amp;l=as2&amp;o=1&amp;a=0596002254" style="border:none !important; margin:0px !important;" width="1" /> (also <a href="http://www.masonbook.com/">available online</a> )</li>
+	<li>Get <a href="http://search.cpan.org/dist/HTML-Mason/">Mason from CPAN</a></li>
+</ul>
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://disqus.com/forums/webquills/embed.js"></script><noscript><a href="http://webquills.disqus.com/?url=ref">View the discussion thread.</a></noscript><a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+<div id="sidebar" class='yui-u'><div id="sidebar-inner" class="yui-b"><!-- YOUR SIDEBAR GOES HERE -->
+    <div class="widget">
+      <h4 class="sidebar">Follow Webquills.net</h4>
+      <div class="widget-content">
+        <ul class="sidemenu">
+            <li class="blog feed"><a href="http://feeds.feedburner.com/Webquills"><img src="/img/feed-icon-20.png" alt="" class="inline no-border" height="20" width="20"> Webquills RSS feed</a></li>
+            <li class="blog feed"><a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=929839&amp;loc=en_US"><img src="/img/mail_get.png" class="inline no-border" alt="" height="20" width="20"> Get Webquills by Email</a></li>
+            <li class="blog feed"><a href="http://twitter.com/veselosky"><img src="/img/twitter-20.png" alt="" class="inline no-border" height="20" width="20"> Follow me on Twitter</a></li>
+
+        </ul>
+      </div>
+    </div>
+ 
+<!--
+    <div class="widget"><h4 class="sidebar">Webquills Recommends</h4>
+      <div class="widget-content">
+        <a href="http://www.basecampHQ.com/?referrer=VINCENTVESELOSKY"><img alt="Basecamp" border="0" height="125" src="https://affiliate.37signals.com/images/products/basecamp/banner-270x125.png" class="inline no-border" width="270" /></a>
+        <script type="text/javascript">
+        google_ad_client = "pub-5857400612237359";
+        /* 300x250 text &amp; image */
+        google_ad_slot = "7120121030";
+        google_ad_width = 300;
+        google_ad_height = 250;
+        </script>
+        <script type="text/javascript"
+        src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+        </script>
+      </div>
+    </div>
+        -->
+
+</div>
+</div>
+</div>
+
+            </div>
+            <div id="ft">
+              <div id="footer-content">
+                  <div class="yui-g">
+                      <div class="yui-u first">
+                        <p><a href="http://www.perl.com/"><img src="/img/powered_by_perl_dk.gif"
+                        alt="Powered by the Perl programming language" class="inline no-border"></a></p>
+                        <p>Part of the <a href="http://perlsphere.net/"><img alt="Perlsphere" class="inline no-border" src="/img/perlsphere.png"></a> network.</p>
+                        <p><a href="/credits.html">additional credits</a></p>
+                      </div>
+                    <div class="yui-u">
+                      <div class="widget-creative-commons widget">
+                         <div class="widget-content">
+                            <p><a href="http://creativecommons.org/licenses/by-nd/3.0/us/"><img src="http://i.creativecommons.org/l/by-nd/3.0/us/88x31.png" class="no-border" alt="Creative Commons License"></a></p>
+                            <p>&copy; Copyright 2008-2009 by Vincent Veselosky. Unless otherwise noted, content on this web site is licensed under a <a href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative Commons License</a>.</p>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+        </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+    var pageTracker = _gat._getTracker("UA-642116-5");
+    pageTracker._trackPageview();
+} catch(err) {}</script>
+    </body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- Combo-handled YUI CSS files: -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.7.0/build/reset-fonts-grids/reset-fonts-grids.css&amp;2.7.0/build/base/base-min.css">
+        <link rel="stylesheet" href="/css/EliteCircle.css" type="text/css">
+        <title>Choose the right template system for your team  – Webquills.net</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <!--[if lte IE 6]>
+        <link rel="stylesheet" type="text/css" href="/css/EliteCircle-ie6.css">
+        <![endif]-->
+        <link rel="alternate" href="http://feeds.feedburner.com/Webquills"
+         title="Webquills: Recent Articles" type="application/atom+xml">
+    </head>
+    <body>
+        <div id="doc3" class="yui-t6">
+            <div id="hd" class="banner"><div id="header-content">
+                <div id="logotype"><a href="/index.html" title="">Web<span class="orange">quills</span></a></div>  
+                <div id="tagline" class="orange">Develop <em>effective</em> web sites</div>       
+                    <ul id="nav" class="navigation">
+                    <li><a href="/index.html" class="current">Home</a></li>
+                    <li><a href="/web-strategy/">Web Strategy</a></li>
+                    <li><a href="/web-development/">Web Development</a></li>
+                    <li><a href="/about.html">About Webquills</a></li>           
+                </ul>
+                <div class="align-right"><form class="" action="/search.html" id="cse-search-box">
+    <div>
+      <input type="hidden" name="cx" value="004553175044610565612:hj3e8onr_tg" />
+      <input type="hidden" name="cof" value="FORID:10" />
+      <input type="hidden" name="ie" value="UTF-8" />
+      <input type="text" name="q" size="31" />
+      <input type="submit" name="sa" value="Search" />
+    </div>
+</form>
+
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en"></script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+ </div>
+            </div></div>
+            <div id="bd">
+                <script>disqus_url = "http://www.webquills.net/scroll/2008/01/choose-the-right-template-syst.html";</script>
+<div id="content" class='yui-gc'>
+<div id="main" class='yui-u first main'>
+<h1 id="choosetherighttemplatesystemforyourteam">Choose the right template system for your team</h1>
+<p>What is the best template system? Ask five people and you&#39;ll probably get six different answers. Perl has more than its fair share of template tools, from the Swiss Army Chainsaw of <a href="http://search.cpan.org/dist/Template-Toolkit/">Template Toolkit</a>, through <a href="http://search.cpan.org/dist/HTML-Mason/">HTML::Mason</a> and <a href="http://search.cpan.org/dist/Text-Template/">Text::Template</a> down to the ever-tempting &quot;variables interpolated in a here-doc&quot; method.</p>
+<p>As always with this type of question, there is no &quot;correct&quot; answer. The best template system is the one that works best for you, in your circumstances. If you are the only programmer in a room full of professional designers, your optimal template choice is likely to be different than if you are just trying to stick a loop into a text file for your own cron job. </p>
+<p>In my experience, the key factors in choosing a template system are usually the composition of your development team, and the development workflow. Who has to work with the templates, and what are their skill sets? Is the code being designed around the interface, or is the interface being pasted on top of the code?</p>
+<p>Read on for a comparison of the major template systems in Perl, and my recommendations of which systems fit which circumstances.</p>
+<h2 id="soloperlhacker:text::template">Solo Perl Hacker: Text::Template</h2>
+<p>If you are a Perl programmer and you are producing your own templates, whether they be an HTML front-end or a plain text email, you can hardly go wrong by starting with <a href="http://search.cpan.org/dist/Text-Template/">Text::Template</a>. This is the shortest path from Perl code to output, short of variable interpolation in a double-quoted string. The syntax is just plain old Perl, and everything you know about Perl translates directly to effective templates.</p>
+<p>The down-side, of course, is that you do not enforce a clear separation of concerns. As a programmer intimately familiar with the internals of your application, you will be tempted to embed all sorts of application logic into the templates themselves. This makes your application harder to test and harder to maintain.</p>
+<p>There is nothing in Text::Template that forces you to mix business logic into your templates or to write unmaintainable code, but it doesn&#39;t go out of its way to encourage modularity or cleanliness either. For larger projects, meaning either lots of templates or several programmers, you may consider a more complex solution that enforces some rules. (Template Toolkit might be a good step up, read below.) But for quick and dirty (or quick and clean) templates, Text::Template is awesome. Also, if your application is <em>not</em> a web application, this is a good place to start.</p>
+<h2 id="perlteamwebapp:html::mason">Perl Team, Web App: HTML::Mason</h2>
+<p><a href="http://search.cpan.org/dist/HTML-Mason/">HTML::Mason</a> is an excellent solution for a small team of Perl programmers writing their own HTML. Although it is not limited to HTML (it works fine with any kind of text), Mason excels at web development. It ships with a light-weight web framework of its own, although it can also be plugged into web frameworks like <a href="http://catalyst.perl.org">Catalyst</a>. </p>
+<p>Like Text::Template, Mason works by embedding Perl into your templates, so Perl programmers can pick it up fairly quickly. Much of Mason&#39;s added syntax is geared around triggering code at different points in the request cycle, and creating time-saving features like automatic wrapping of content with layout components that are &quot;inherited&quot; based on the directory hierarchy. </p>
+<p>Mason allows you to think about HTML design like a <em>programmer</em>, decomposing a web site into reusable components that are effectively Perl objects, each with its own methods and variable scope. This makes it highly effective for code-centric applications, where the HTML is built after the primary program logic.</p>
+<p>Mason is not necessarily the best system for HTML designers who are not Perl hackers. Because it encourages decomposition into components, you rarely have a template that represents a complete HTML document. Mason&#39;s syntax uses pseudo-tags to demarcate embedded logic, which tends to upset HTML-centric design tools.</p>
+<p>I find Mason to be especially useful for applications where I need to create a web interface to some existing data store, such as a SQL database created by another application. Combined with a clean database access layer like <a href="http://search.cpan.org/dist/DBIx-Class/">DBIx::Class</a>, you can get from legacy database to structured web front-end extremely quickly.</p>
+<p>I&#39;m a big Mason fan, and I encourage you to visit <a href="http://www.masonhq.com">Mason HQ</a> to give it a try.</p>
+<h2 id="dedicatedhtmlcoder:html::templateortemplatetoolkit">Dedicated HTML Coder: HTML::Template or Template Toolkit</h2>
+<p>If your team has designers who are good with mark-up but not experienced programmers, then you probably want a template system that will insulate them from program logic while giving them the flexibility to construct simple loops and conditionals. </p>
+<p><a href="http://search.cpan.org/dist/HTML-Template/">HTML::Template</a> is a good choice for the mark-up coder who is less programmatically inclined. Its syntax is close to HTML, which flattens the learning curve, and it doesn&#39;t expose too many internal moving parts that would be hard to learn and easy to break. On the other hand, the syntax is <em>so</em> similar to HTML that HTML editing tools might see it as bad mark-up and complain about it. As with Mason, your templates will almost certainly not validate on their own. (As a programmer, I find the functional limitations frustrating.)</p>
+<p>If your HTML expert is also comfortable writing Javascript code (or some other non-Perl language like Java, Python, or Ruby), you might shift toward <a href="http://search.cpan.org/dist/Template-Toolkit/">Template Toolkit</a>. TT allows you to use program objects in the template using a Javascript-like dot syntax, and gives a bit more flexibility in logical constructs. TT also has the advantage that it can scale to large and complex template sets, and its numerous plugins give you a lot of usage options. Template instructions will not be confused with HTML mark-up, either by humans or editing tools, so if you&#39;re careful you can get your unprocessed templates to validate.</p>
+<h2 id="fancy-pantsdesignersvs.engineers:templatetoolkitpetaltemplate::tal">Fancy-pants Designers vs. Engineers: Template Toolkit, Petal, Template::TAL</h2>
+<p>If your web application is heavily design-oriented, what your designers want from you is probably what they might describe as &quot;server-side Javascript&quot;. That is, you are probably working from a design first, and building program logic to hang functionality onto the design.</p>
+<p>Template Toolkit can fit pretty well into this kind of process. It makes sense to designers familiar with Javascript or some other programming language, and the more programmatically inclined designers enjoy exercising program logic in their templates. But not all designers are programmatically inclined. I refer to these types (lovingly) as &quot;fancy-pants&quot; designers.</p>
+<p>Typically, fancy-pants designers will start with a &quot;wireframe&quot; sketch and move up to fully elaborated Photoshop mocks of their web designs. Only after working in this form for several iterations will they start to generate an HTML model of the design. Their first goal is to create an HTML model that exactly mimics their Photoshop images, including sample text and images in the content areas. This helps them to visually prove that their designs will display correctly in a web browser (vitally important for a design-intensive web application).</p>
+<p>Using Template Toolkit or any of the above template solutions adds a step to the design workflow where the HTML model must be dismantled, and bits of pretty HTML filler replaced with unattractive template tags and symbols. Most designers don&#39;t care for this, because it makes it more difficult to visualize the product as it was meant to be viewed. Design changes that come <em>after</em> this transformation can be painful, because the designers usually have to go back to their mocked HTML model to visualize the changes, and then they (or you) must repeat the dismantling and replacement process.</p>
+<p><a href="http://search.cpan.org/perldoc?Petal">Petal</a> and <a href="http://search.cpan.org/perldoc?Template::TAL">Template::TAL</a> are potential solutions to this problem. (Both are Perl ports of a Python tool, <a href="http://wiki.zope.org/ZPT/TAL">Zope Template Attribute Language</a>.) Their technique solves the problem by hiding template instructions in the HTML as extra attributes on proper HTML tags. Designers can feel free to fill the template with sample text and images that will make the template display cleanly in any web browser or HTML editing tool. Instead of taking this filler away, they (or you) <em>add</em> template instructions that dictate how the filler should be replaced by the output of program objects when the template is processed. Using namespaces, this can result in templates that are valid XHTML documents.</p>
+<h2 id="andthewinneris...">And the winner is...</h2>
+<p>What have we learned? When choosing a template system, you must consider the needs of the team as a whole, not just the software developers. Any of these solutions might be perfect for your team and your workflow.</p>
+<p>But since you insist: My personal favorite is <a href="http://search.cpan.org/dist/HTML-Mason/">HTML::Mason</a>. I&#39;ve been using it to build web applications for years. The community is very supportive, I&#39;m comfortable with it&#39;s quirks, and most importantly, I&#39;m extremely productive with it. However, if you currently have no experience with any of these template systems, and you want to learn only <em>one</em> system, I recommend you pick up <a href="http://search.cpan.org/dist/Template-Toolkit/">Template Toolkit</a>. It has a vibrant community around it, which I consider a must for any tool I use. You can get started quickly. And you can reasonably use it in small, simple applications as well as large complex ones, so it leaves you plenty of room to grow.</p>
+<p>If I forgot to mention <em>your</em> favorite template system, I&#39;m sorry. I can only write about what I know, and these are the template systems that I am familiar with. Feel free to plug your own favorite solution in the comments!</p>
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://disqus.com/forums/webquills/embed.js"></script><noscript><a href="http://webquills.disqus.com/?url=ref">View the discussion thread.</a></noscript><a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+<div id="sidebar" class='yui-u'><div id="sidebar-inner" class="yui-b"><!-- YOUR SIDEBAR GOES HERE -->
+    <div class="widget">
+      <h4 class="sidebar">Follow Webquills.net</h4>
+      <div class="widget-content">
+        <ul class="sidemenu">
+            <li class="blog feed"><a href="http://feeds.feedburner.com/Webquills"><img src="/img/feed-icon-20.png" alt="" class="inline no-border" height="20" width="20"> Webquills RSS feed</a></li>
+            <li class="blog feed"><a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=929839&amp;loc=en_US"><img src="/img/mail_get.png" class="inline no-border" alt="" height="20" width="20"> Get Webquills by Email</a></li>
+            <li class="blog feed"><a href="http://twitter.com/veselosky"><img src="/img/twitter-20.png" alt="" class="inline no-border" height="20" width="20"> Follow me on Twitter</a></li>
+
+        </ul>
+      </div>
+    </div>
+ 
+<!--
+    <div class="widget"><h4 class="sidebar">Webquills Recommends</h4>
+      <div class="widget-content">
+        <a href="http://www.basecampHQ.com/?referrer=VINCENTVESELOSKY"><img alt="Basecamp" border="0" height="125" src="https://affiliate.37signals.com/images/products/basecamp/banner-270x125.png" class="inline no-border" width="270" /></a>
+        <script type="text/javascript">
+        google_ad_client = "pub-5857400612237359";
+        /* 300x250 text &amp; image */
+        google_ad_slot = "7120121030";
+        google_ad_width = 300;
+        google_ad_height = 250;
+        </script>
+        <script type="text/javascript"
+        src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+        </script>
+      </div>
+    </div>
+        -->
+
+</div>
+</div>
+</div>
+
+            </div>
+            <div id="ft">
+              <div id="footer-content">
+                  <div class="yui-g">
+                      <div class="yui-u first">
+                        <p><a href="http://www.perl.com/"><img src="/img/powered_by_perl_dk.gif"
+                        alt="Powered by the Perl programming language" class="inline no-border"></a></p>
+                        <p>Part of the <a href="http://perlsphere.net/"><img alt="Perlsphere" class="inline no-border" src="/img/perlsphere.png"></a> network.</p>
+                        <p><a href="/credits.html">additional credits</a></p>
+                      </div>
+                    <div class="yui-u">
+                      <div class="widget-creative-commons widget">
+                         <div class="widget-content">
+                            <p><a href="http://creativecommons.org/licenses/by-nd/3.0/us/"><img src="http://i.creativecommons.org/l/by-nd/3.0/us/88x31.png" class="no-border" alt="Creative Commons License"></a></p>
+                            <p>&copy; Copyright 2008-2009 by Vincent Veselosky. Unless otherwise noted, content on this web site is licensed under a <a href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative Commons License</a>.</p>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+        </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+    var pageTracker = _gat._getTracker("UA-642116-5");
+    pageTracker._trackPageview();
+} catch(err) {}</script>
+    </body>
+</html>

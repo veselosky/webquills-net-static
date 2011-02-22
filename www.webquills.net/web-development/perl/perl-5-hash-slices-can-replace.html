@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <!-- Combo-handled YUI CSS files: -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?2.7.0/build/reset-fonts-grids/reset-fonts-grids.css&amp;2.7.0/build/base/base-min.css">
+        <link rel="stylesheet" href="/css/EliteCircle.css" type="text/css">
+        <title>Perl 5: Hash slices can replace loops  – Webquills.net</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <!--[if lte IE 6]>
+        <link rel="stylesheet" type="text/css" href="/css/EliteCircle-ie6.css">
+        <![endif]-->
+        <link rel="alternate" href="http://feeds.feedburner.com/Webquills"
+         title="Webquills: Recent Articles" type="application/atom+xml">
+    </head>
+    <body>
+        <div id="doc3" class="yui-t6">
+            <div id="hd" class="banner"><div id="header-content">
+                <div id="logotype"><a href="/index.html" title="">Web<span class="orange">quills</span></a></div>  
+                <div id="tagline" class="orange">Develop <em>effective</em> web sites</div>       
+                    <ul id="nav" class="navigation">
+                    <li><a href="/index.html" class="current">Home</a></li>
+                    <li><a href="/web-strategy/">Web Strategy</a></li>
+                    <li><a href="/web-development/">Web Development</a></li>
+                    <li><a href="/about.html">About Webquills</a></li>           
+                </ul>
+                <div class="align-right"><form class="" action="/search.html" id="cse-search-box">
+    <div>
+      <input type="hidden" name="cx" value="004553175044610565612:hj3e8onr_tg" />
+      <input type="hidden" name="cof" value="FORID:10" />
+      <input type="hidden" name="ie" value="UTF-8" />
+      <input type="text" name="q" size="31" />
+      <input type="submit" name="sa" value="Search" />
+    </div>
+</form>
+
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en"></script>
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+ </div>
+            </div></div>
+            <div id="bd">
+                <div id="content" class='yui-gc'>
+<div id="main" class='yui-u first main'>
+<h1 id="perl5:hashslicescanreplaceloops">Perl 5: Hash slices can replace loops</h1>
+<p>How many times have you written a <code>for</code> loop to do something simple with a hash and thought, there must be a better way to do this? Using hash slices instead of simple loops can save you lines of code and execution time.</p>
+<p>A <em>hash slice</em> is a syntax for accessing the values of multiple keys of a hash in a single statement. It is a succinct and efficient technique, but it is also one of those collections of punctuation that give Perl a reputation as a write-only language. Once you have learned it, however, you will feel much more clever! Here are a few examples of how I use hash slices to make my code shorter and faster. (Note that you can also slice arrays, but today we are just talking about hashes.)</p>
+<h2 id="basichashslicesyntax">Basic hash slice syntax</h2>
+<p>You perform a hash slice by using a list as a hash index, rather than a scalar value, and preceding with the <code>@</code> sigil rather than the <code>$</code> sigil you would use to get a scalar value.</p>
+<pre><code>my %number_for = (one =&gt; 1, two =&gt; 2, three =&gt; 3);
+# Regular access to scalar key
+print $number_for{one}; # 1
+# Hash slice accesses multiple keys. Note the &#39;@&#39;
+print @number_for{qw(one two three)}; # 123
+# This also works
+print @number_for{&#39;one&#39;,&#39;two&#39;,&#39;three&#39;}; # 123
+</code></pre>
+<p>A cautionary note: notice how the scalar index uses a bare word as the key. Perl gives you the quoting for free in this case. With a slice, Perl doesn&#39;t help, so you have to do the quoting yourself.</p>
+<h2 id="mergingtwohashes">Merging two hashes</h2>
+<p>Since hash slices can be lvalues, they can be used to merge one hash into another. A common example is when you get configuration information from more than one source, but you want to consolidate it to look up in just one place.</p>
+<pre><code>my %your_numbers = (two =&gt; 2, four =&gt; 4, six =&gt; 6);
+# I get all your numbers! 
+# (And your number will override mine if they differ)
+@number_for{keys %your_numbers} = values %your_numbers;
+print sort values %number_for; # 12346
+</code></pre>
+<h2 id="accessingkeysinaparticularorder">Accessing keys in a particular order</h2>
+<p>Here is a common thing you run into in web development. You have received input from a web form and validated it. (You <em>have</em> validated it, right?) The data lives in a hash, and you want to store it in a database. You have your SQL statement all prepared, but it requires that the values be bound in exact column order. Unfortunately, the <code>values</code> function cannot be relied upon to return the values in the order you want. (And besides, you don&#39;t want to store the value of the submit button!)</p>
+<pre><code># get valid data from your validation code
+my %validated = %number_for;
+# Columns of your table, in order needed by your SQL
+my @columns = qw(six one three);
+# Get the bind values with a slice
+my @bind = @validated{@columns}; # 6,1,3
+</code></pre>
+<h2 id="accessingvaluessortedbykeys">Accessing values sorted by keys</h2>
+<p>Say you want to sort a hash by its keys, and then use the values in that sorted order. Using the above data, perhaps we want to print numbers in alphabetical order.</p>
+<pre><code>print @number_for{sort keys %number_for}; # 41632
+</code></pre>
+<h2 id="slicingahashreference">Slicing a hash reference</h2>
+<p>Eventually you will find yourself with a reference to a hash, and you will discover that the above syntax does not work. You may try three or four different combinations of curlies and arrows that just generate errors. Don&#39;t give up! You <em>can</em> slice a hashref! First, let&#39;s review using a hashref to get at scalar values.</p>
+<pre><code>my $num_for = \%number_for;
+# Common syntax for dereferencing and getting a scalar index
+print $num_for-&gt;{one}; # 1
+# Alternate syntax, the lazy way:
+print $$num_for{two}; # 2
+# Alternate syntax, the explicit way
+print ${$num_for}{six}; # 6
+</code></pre>
+<p>The key to slicing a reference to a hash is to use the alternate syntax shown above, replacing the initial <code>$</code> sigil with <code>@</code>.</p>
+<pre><code># The lazy way:
+print @$num_for{@columns}; # 613
+# The explicit way:
+print @{$num_for}{@columns}; # 613
+</code></pre>
+<p>Note the distinct absence of the &quot;arrow&quot; syntax. The arrow implies a scalar, and we want a list.</p>
+<h2 id="powerfulsyntax">Powerful syntax</h2>
+<p>The hash slice is an advanced syntax demonstrating Perl&#39;s concision and expressiveness. Now you should be able to recognize it when you see it, and hopefully apply it to your own projects to save time and space. (But remember, use your Perl superpowers only for Good, never for Evil!)</p>
+<p>For a semi-regular diet of great Perl programming tips, <a href="http://feeds.feedburner.com/Webquills">subscribe to the Webquills.net feed</a> or <a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=929839&amp;loc=en_US">get Webquills.net via email</a>. </p>
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://disqus.com/forums/webquills/embed.js"></script><noscript><a href="http://webquills.disqus.com/?url=ref">View the discussion thread.</a></noscript><a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+<div id="sidebar" class='yui-u'><div id="sidebar-inner" class="yui-b"><!-- YOUR SIDEBAR GOES HERE -->
+    <div class="widget">
+      <h4 class="sidebar">Follow Webquills.net</h4>
+      <div class="widget-content">
+        <ul class="sidemenu">
+            <li class="blog feed"><a href="http://feeds.feedburner.com/Webquills"><img src="/img/feed-icon-20.png" alt="" class="inline no-border" height="20" width="20"> Webquills RSS feed</a></li>
+            <li class="blog feed"><a href="http://www.feedburner.com/fb/a/emailverifySubmit?feedId=929839&amp;loc=en_US"><img src="/img/mail_get.png" class="inline no-border" alt="" height="20" width="20"> Get Webquills by Email</a></li>
+            <li class="blog feed"><a href="http://twitter.com/veselosky"><img src="/img/twitter-20.png" alt="" class="inline no-border" height="20" width="20"> Follow me on Twitter</a></li>
+
+        </ul>
+      </div>
+    </div>
+ 
+<!--
+    <div class="widget"><h4 class="sidebar">Webquills Recommends</h4>
+      <div class="widget-content">
+        <a href="http://www.basecampHQ.com/?referrer=VINCENTVESELOSKY"><img alt="Basecamp" border="0" height="125" src="https://affiliate.37signals.com/images/products/basecamp/banner-270x125.png" class="inline no-border" width="270" /></a>
+        <script type="text/javascript">
+        google_ad_client = "pub-5857400612237359";
+        /* 300x250 text &amp; image */
+        google_ad_slot = "7120121030";
+        google_ad_width = 300;
+        google_ad_height = 250;
+        </script>
+        <script type="text/javascript"
+        src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+        </script>
+      </div>
+    </div>
+        -->
+
+</div>
+</div>
+</div>
+
+            </div>
+            <div id="ft">
+              <div id="footer-content">
+                  <div class="yui-g">
+                      <div class="yui-u first">
+                        <p><a href="http://www.perl.com/"><img src="/img/powered_by_perl_dk.gif"
+                        alt="Powered by the Perl programming language" class="inline no-border"></a></p>
+                        <p>Part of the <a href="http://perlsphere.net/"><img alt="Perlsphere" class="inline no-border" src="/img/perlsphere.png"></a> network.</p>
+                        <p><a href="/credits.html">additional credits</a></p>
+                      </div>
+                    <div class="yui-u">
+                      <div class="widget-creative-commons widget">
+                         <div class="widget-content">
+                            <p><a href="http://creativecommons.org/licenses/by-nd/3.0/us/"><img src="http://i.creativecommons.org/l/by-nd/3.0/us/88x31.png" class="no-border" alt="Creative Commons License"></a></p>
+                            <p>&copy; Copyright 2008-2009 by Vincent Veselosky. Unless otherwise noted, content on this web site is licensed under a <a href="http://creativecommons.org/licenses/by-nd/3.0/us/">Creative Commons License</a>.</p>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+            </div>
+        </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+    var pageTracker = _gat._getTracker("UA-642116-5");
+    pageTracker._trackPageview();
+} catch(err) {}</script>
+    </body>
+</html>
