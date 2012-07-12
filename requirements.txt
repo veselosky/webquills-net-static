@@ -1,0 +1,4 @@
+Fabric==1.4.3
+ssh==1.7.14
+
+https://github.com/veselosky/otto-webber/tarball/v0.2.0
