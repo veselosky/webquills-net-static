@@ -1,0 +1,28 @@
+<VirtualHost *:80>
+# This VirtualHost merely redirects all alias domains to the main domain.
+ServerName {{ aliases|first }}
+ServerAlias {% for alias in aliases %}{% if not loop.first %}{{ alias }} {% endif %}{% endfor %}
+
+Redirect permanent / http://{{ domain }}/
+</VirtualHost>
+
+<VirtualHost *:80>
+ServerName {{ domain }}
+DocumentRoot {{ website_root }}/{{ domain }}/htdocs
+
+# Conditional ENV for SSI magics
+BrowserMatchNoCase MSIE MSIE
+BrowserMatchNoCase Windows WINDOWS
+
+# Main content area
+<Directory {{ website_root }}/{{ domain }}/htdocs>
+    Options Includes FollowSymLinks
+    AllowOverride All
+    # Replaces Allow/Deny from earlier Apaches
+    Require all granted
+
+    AddHandler server-parsed .htm .html
+
+</Directory>
+
+</VirtualHost>
